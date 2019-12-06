@@ -8,7 +8,6 @@
     2))
 
 (defn run
-  "Day one exercise"
   [inputs]
   (reduce 
     (fn [a b] 

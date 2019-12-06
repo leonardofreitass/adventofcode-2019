@@ -10,11 +10,11 @@
         2))
     0))
 
-(defn calculate-massed-fuel [mass]
+(defn calculate-massed-fuel [acc mass]
   (let [fuel (calculate-fuel mass)]
     (if (= fuel 0)
-      fuel
-      (+ fuel (calculate-massed-fuel fuel)))))
+      acc
+      (recur (+ acc fuel) fuel))))
 
 (defn run
   [inputs]
@@ -22,6 +22,6 @@
     (fn [a b]
       (+
         a 
-        (calculate-massed-fuel (Integer/parseInt b))))
+        (calculate-massed-fuel 0 (Integer/parseInt b))))
     0
     inputs))
