@@ -1,7 +1,8 @@
 (ns adventofcode-2019.core
+  (:require [adventofcode-2019.exercises :as exercises])
   (:gen-class))
 
 (defn -main
-  "I don't do a whole lot ... yet."
-  [& args]
-  (println "Hello, World!"))
+  "Runs an advent of code exercise"
+  [& [exercise]]
+  (exercises/execute exercise))
