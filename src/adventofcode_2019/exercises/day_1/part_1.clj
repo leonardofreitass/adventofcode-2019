@@ -1,4 +1,4 @@
-(ns adventofcode-2019.exercises.day-1)
+(ns adventofcode-2019.exercises.day-1.part-1)
 
 (defn calculate-fuel [mass]
   (- 

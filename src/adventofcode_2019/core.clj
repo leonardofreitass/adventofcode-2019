@@ -4,5 +4,5 @@
 
 (defn -main
   "Runs an advent of code exercise"
-  [& [exercise]]
-  (exercises/execute exercise))
+  [& [exercise part]]
+  (exercises/execute exercise part))
