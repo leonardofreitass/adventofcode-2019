@@ -1,4 +1,4 @@
-(ns adventofcode-2019.exercises.day-2.part-1
+(ns adventofcode-2019.exercises.day-2.part-2
   (:require [clojure.string :as str]))
 
 (defn intcode-pos [intcode pos]
@@ -23,16 +23,26 @@
               (intcode-pos intcode int-b)))
           next-pos)))))
 
-(defn prepare [intcode]
-  (assoc
+(defn prepare [intcode noun verb]
+  (assoc 
     intcode 
-    1 12 
-    2 2))
+    1 noun 
+    2 verb))
+
+(defn find-target [intcode target]
+  (some
+    (fn [[noun verb]]
+      (let [result (read-intcode (prepare intcode noun verb) 0)]
+        (when
+          (= target (first result))
+          [noun verb])))
+    (for [x (range 100) y (range 100)] [x y])))
 
 (defn parse-input [inputs] (vec (map #(Integer/parseInt %) (str/split (first inputs) #","))))
 
 (defn run
   [inputs]
-  (let [intcode (parse-input inputs)]
-    (str/join "," (read-intcode (prepare intcode) 0))))
+  (let [intcode (parse-input inputs)
+        [noun verb] (find-target intcode 19690720)]
+    (+ (* 100 noun) verb)))
 
