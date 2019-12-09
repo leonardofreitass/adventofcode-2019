@@ -2,7 +2,8 @@
   (:require [clojure.string :as str]))
 
 (defn setup-orbits [orbits map]
-  (if (> (count map) 0)
+  (if (empty? map)
+    orbits
     (let [relation (first map)
         [target obj] (str/split relation #"\)")]
       (recur
@@ -10,8 +11,7 @@
           orbits
           (keyword obj)
           {:orbits (keyword target)})
-        (drop 1 map)))
-    orbits))
+        (drop 1 map)))))
 
 (defn count-orbits [orbits]
   (reduce
