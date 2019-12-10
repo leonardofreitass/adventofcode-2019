@@ -25,7 +25,30 @@
     (re-seq (re-pattern (str "\\d{" width "}")) encoded)
     tall))
 
+(defn count-in-layer [layer digit]
+  (reduce
+    #(+ %1 (count (re-seq (re-pattern (str digit)) %2)))
+    0
+    layer))
+
+(defn find-by-min [layers digit]
+  (loop [[max-count max-index max-layer] [##Inf nil nil]
+         index 0
+         left layers]
+    (if (empty? left)
+      [max-index max-layer]
+      (let [layer (first left)
+            layer-count (count-in-layer layer digit)]
+        (recur
+          (if (< layer-count max-count)
+            [layer-count index layer]
+            [max-count max-index max-layer])
+          (inc index)
+          (drop 1 left))))))
+
 (defn run
   [inputs]
-  (decode (first inputs) 3 2))
+  (let [layers (decode (first inputs) 25 6)
+        [_ layer] (find-by-min layers 0)]
+    (* (count-in-layer layer 1) (count-in-layer layer 2))))
 
