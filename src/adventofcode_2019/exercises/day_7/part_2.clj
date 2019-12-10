@@ -17,12 +17,12 @@
 (defn split-op [op]
   (str/split op #""))
 
-(defn read-intcode [intcode pos inputs outputs]
+(defn read-intcode [intcode pos inputs]
   (let [op-str (format-op (nth intcode pos))
         op (subs op-str (- (count op-str) 2))]
     (cond
       (= op "99")
-      outputs
+      [nil nil inputs (first inputs)]
       
       (or (= op "01") (= op "02"))
       (let [int-a (inc pos)
@@ -38,8 +38,7 @@
               (intcode-value intcode int-a a-mode)
               (intcode-value intcode int-b b-mode)))
           next-pos
-          inputs
-          outputs))
+          inputs))
           
       (= op "03")
       (let [res-pos (inc pos)
@@ -51,18 +50,13 @@
             (intcode-pos intcode res-pos res-mode)
             (first inputs))
           next-pos
-          (drop 1 inputs)
-          outputs))
+          (drop 1 inputs)))
           
       (= op "04")
       (let [res-pos (inc pos)
             next-pos (inc res-pos)
             [_ _ res-mode] (split-op op-str)]
-        (recur
-          intcode
-          next-pos
-          inputs
-          (conj outputs (intcode-value intcode res-pos res-mode))))
+        [intcode next-pos inputs (intcode-value intcode res-pos res-mode)])
           
       (or (= op "05") (= op "06"))
       (let [int-pos (inc pos)
@@ -76,8 +70,7 @@
         (recur
           intcode
           next-pos
-          inputs
-          outputs))
+          inputs))
           
       (or (= op "07") (= op "08"))
       (let [int-a (inc pos)
@@ -94,30 +87,38 @@
                   (intcode-value intcode int-b b-mode))
               1 0))
           next-pos
-          inputs
-          outputs))
-          
-      :else
-      outputs)))
+          inputs)))))
 
 (defn parse-input [inputs] (vec (map #(Integer/parseInt %) (str/split (first inputs) #","))))
 
-(defn calculate-outcome [intcode signals]
-  (reduce
-    (fn [acc signal]
-      (read-intcode intcode 0 (apply conj [signal] acc) []))
-    [0]
-    signals))
+(defn calculate-outcome [signals amp input]
+  (let [next-amp (rem (inc amp) 5)
+        [intcode pos inputs] (nth signals amp)
+        [new-intcode new-pos new-inputs output] (read-intcode intcode pos (conj inputs input))]
+    (if (and (= amp 4) (nil? new-intcode))
+      output
+      (recur
+        (assoc
+          signals
+          amp
+          [new-intcode new-pos new-inputs])
+        next-amp
+        output))))
 
+; I am not proud of the code bellow, but lets move on =D
 (defn run
   [inputs]
   (let [intcode (parse-input inputs)
-        signals-permutation (for [a (range 5) 
-                                  b (range 5)
-                                  c (range 5)
-                                  d (range 5)
-                                  e (range 5)
+        signals-permutation (for [a (range 5 10) 
+                                  b (range 5 10)
+                                  c (range 5 10)
+                                  d (range 5 10)
+                                  e (range 5 10)
                                   :when (= (count (set [a b c d e])) 5)] 
-                              [a b c d e])]
-   (apply max (map #(first (calculate-outcome intcode %)) signals-permutation))))
+                              [[(vec intcode) 0 [a]]
+                               [(vec intcode) 0 [b]]
+                               [(vec intcode) 0 [c]]
+                               [(vec intcode) 0 [d]]
+                               [(vec intcode) 0 [e]]])]
+   (apply max (map #(calculate-outcome % 0 0) signals-permutation))))
 
